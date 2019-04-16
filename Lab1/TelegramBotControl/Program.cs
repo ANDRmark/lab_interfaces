@@ -32,9 +32,11 @@ namespace TelegramBotControl
                     }
                 }
             }
-            TB.SendMessage("ANDRmark", "bot is saying hello");
-            TB.SendMessage("experiment", "bot is saying hello");
-            TB.SendMessage("bottestgroup", "bot is saying hello");
+            TB.SendMessageToUser("ANDRmark", "bot is saying hello");
+            TB.SendMessageToChannel("experiment", "bot is saying hello");
+            TB.SendMessageToGroup("bottestgroup", "bot is saying hello");
+            TB.BackupChatIDs();
+            Console.WriteLine("THE END");
             Console.ReadLine();
         }
     }
