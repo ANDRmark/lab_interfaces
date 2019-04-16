@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft;
@@ -45,14 +46,43 @@ namespace TelegramBotControl
     }
     public class ConsoleBotControl
     {
-        private TelegramBot bot { get; set; }
+        private FSM FSM { get; set; }
         public ConsoleBotControl(string botToken)
         {
-            this.bot = new TelegramBot(botToken, "chatIDs.json");
+            this.FSM = new FSM(botToken, "chatIDs.json");
         }
         public string State { get; set; }
     }
 
+    public class FSM
+    {
+        
+        public Dictionary<string, State> States { get; set; }
+        public State CurrentState { get; set; }
+
+        private static Dictionary<string, Func<State>> AllRegisteredStates { get; set; } = new Dictionary<string, Func<State>>();
+        public static void RegisterState(string stateId, Func<State> stateCreator)
+        {
+            AllRegisteredStates[stateId] = stateCreator;
+        }
+    }
+
+    [Flags]
+    public enum ControlSignals
+    {
+
+    }
+    public class State
+    {
+        public string Id { get; set; }
+        public bool Completed { get; set; }
+        public Action callback { get; set; }
+
+        public void Execute()
+        {
+            callback();
+        }
+    }
     public class ListenMode
     {
         private CancellationTokenSource tokenSource { get; set; }
@@ -61,12 +91,21 @@ namespace TelegramBotControl
         public void Listen(Action callback)
         {
             Console.WriteLine("Press any key to stop listening");
-            tokenSource = new CancellationTokenSource();
-            var bacgroundPrinting = Task.Run(new Action(BackGroundPrinting), this.tokenSource.Token);
-            Console.ReadKey();
-            this.tokenSource.Cancel();
-            bacgroundPrinting.Wait();
-            this.tokenSource.Dispose();
+            using (this.tokenSource = new CancellationTokenSource())
+            {
+                var bacgroundPrinting = Task.Run(BackGroundPrinting, this.tokenSource.Token);
+                Console.ReadKey();
+                this.tokenSource.Cancel();
+                try
+                {
+                    bacgroundPrinting.Wait();
+                }
+                catch (AggregateException e)
+                {
+                    if (!(e.InnerException is OperationCanceledException))
+                        throw new Exception("Listen failed.", e.InnerException);
+                }
+            }
             callback();
         }
         public ListenMode(TelegramBot bot)
@@ -76,13 +115,14 @@ namespace TelegramBotControl
 
         private void BackGroundPrinting()
         {
-            while (!this.tokenSource.Token.IsCancellationRequested)
+            while (true)
             {
-                var updates = this.bot.GetUpdates(this.tokenSource.Token);
+                this.tokenSource.Token.ThrowIfCancellationRequested();
+
+                var updates = this.bot.GetUpdates(this.tokenSource.Token).Result;
                 if (updates.Exception != null)
                 {
-                    Console.WriteLine($"Exception occurred while getting new messages. {updates.Exception.ToString()}");
-                    this.tokenSource.Cancel();
+                    throw  new Exception($"Exception occurred while getting new messages.", updates.Exception);
                 }
                 else
                 {

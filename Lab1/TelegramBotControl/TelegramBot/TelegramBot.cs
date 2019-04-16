@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace TelegramBotControl
@@ -18,7 +19,7 @@ namespace TelegramBotControl
         public TelegramBot(string token, string backupChutIDsFileName = null)
         {
             this.Token = token;
-            this.baseUri = "https://api.telegram.org/bot" + token;
+            this.baseUri = "https://api.telegram.org/bot" + this.Token;
             this.chatIDs = new ChatIDs();
             this.backupChutIDsFileName = backupChutIDsFileName;
             try
@@ -136,10 +137,10 @@ namespace TelegramBotControl
 
         public Updates GetUpdates()
         {
-            return GetUpdates(CancellationToken.None);
+            return GetUpdates(CancellationToken.None).Result;
         }
 
-        public Updates GetUpdates(CancellationToken ct)
+        public async Task<Updates> GetUpdates(CancellationToken ct)
         {
             string command = "getUpdates";
             string httpMethod = "POST";
@@ -151,22 +152,23 @@ namespace TelegramBotControl
             string response = null;
             try
             {
-                response = this.Post(httpMethod, command, args, ct);
+                response = await this.Post(httpMethod, command, args, ct);
                 ReadUpdates(result.IncomeMessages, response);
             }
-            catch (Exception ex)
+            catch (AggregateException ex)
             {
-                result.Exception = new Exception($"GetUpdates failed. Data returned from telegram: {response}", ex);
+                if (ex.InnerException is OperationCanceledException) throw ex.InnerException;
+                result.Exception = new Exception($"GetUpdates failed. Data returned from telegram: {response}", ex.InnerException);
             }
             return result;
         }
 
         private string Post(string httpMethod, string command, Dictionary<string, string> parameters)
         {
-            return Post(httpMethod, command, parameters, CancellationToken.None);
+            return Post(httpMethod, command, parameters, CancellationToken.None).Result;
         }
 
-        private string Post(string httpMethod, string command, Dictionary<string, string> parameters, CancellationToken ct)
+        private async Task<string> Post(string httpMethod, string command, Dictionary<string, string> parameters, CancellationToken ct)
         {
             string uri = this.baseUri + "/" + command;
 
@@ -183,17 +185,7 @@ namespace TelegramBotControl
             using (this.client = new HttpClient())
             {
                 var task = client.SendAsync(request, ct);
-                try
-                {
-                    response = task.Result.Content.ReadAsStringAsync().Result;
-                } catch(AggregateException ex)
-                {
-                    if (task.IsCanceled)
-                    {
-                        return null;
-                    }
-                    throw ex;
-                }
+                response = await (await task).Content.ReadAsStringAsync();
             }
             return response;
         }
