@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading;
 using Newtonsoft.Json;
 
 namespace TelegramBotControl
@@ -11,25 +12,29 @@ namespace TelegramBotControl
         private HttpClient client { get; set; }
         private string baseUri { get; set; }
         private long nextUpdateId { get; set; }
-        private ChatIDs chatIDs {get; set;}
-        private string backupFileName { get; set; } = "chatIDs.json";
+        private ChatIDs chatIDs { get; set; }
+        private string backupChutIDsFileName { get; set; }
 
-        public TelegramBot(string token)
+        public TelegramBot(string token, string backupChutIDsFileName = null)
         {
             this.Token = token;
             this.baseUri = "https://api.telegram.org/bot" + token;
             this.chatIDs = new ChatIDs();
-
+            this.backupChutIDsFileName = backupChutIDsFileName;
             try
             {
-                this.chatIDs = JsonConvert.DeserializeObject<ChatIDs>(System.IO.File.ReadAllText(backupFileName));
+                this.chatIDs = JsonConvert.DeserializeObject<ChatIDs>(System.IO.File.ReadAllText(backupChutIDsFileName));
             }
             catch { }
         }
 
         public void BackupChatIDs()
         {
-            System.IO.File.WriteAllText(backupFileName, JsonConvert.SerializeObject(this.chatIDs));
+            try
+            {
+                System.IO.File.WriteAllText(backupChutIDsFileName, JsonConvert.SerializeObject(this.chatIDs));
+            }
+            catch { }
         }
 
         public CheckStatus CheckStatus()
@@ -112,7 +117,7 @@ namespace TelegramBotControl
             switch (destination)
             {
                 case OutcomeMessageType.PrivateMessage:
-                    if(!this.chatIDs.privateChatIdsByUsername.ContainsKey(UserOrGroupOrChannel)) throw new Exception($"Can not fing chat with user/group/channel {UserOrGroupOrChannel}. Firstly user/group/channel should write something to bot");
+                    if (!this.chatIDs.privateChatIdsByUsername.ContainsKey(UserOrGroupOrChannel)) throw new Exception($"Can not fing chat with user/group/channel {UserOrGroupOrChannel}. Firstly user/group/channel should write something to bot");
                     args["chat_id"] = this.chatIDs.privateChatIdsByUsername[UserOrGroupOrChannel];
                     break;
                 case OutcomeMessageType.GroupMessage:
@@ -131,6 +136,11 @@ namespace TelegramBotControl
 
         public Updates GetUpdates()
         {
+            return GetUpdates(CancellationToken.None);
+        }
+
+        public Updates GetUpdates(CancellationToken ct)
+        {
             string command = "getUpdates";
             string httpMethod = "POST";
             var args = new Dictionary<string, string>();
@@ -141,7 +151,7 @@ namespace TelegramBotControl
             string response = null;
             try
             {
-                response = this.Post(httpMethod, command, args);
+                response = this.Post(httpMethod, command, args, ct);
                 ReadUpdates(result.IncomeMessages, response);
             }
             catch (Exception ex)
@@ -152,6 +162,11 @@ namespace TelegramBotControl
         }
 
         private string Post(string httpMethod, string command, Dictionary<string, string> parameters)
+        {
+            return Post(httpMethod, command, parameters, CancellationToken.None);
+        }
+
+        private string Post(string httpMethod, string command, Dictionary<string, string> parameters, CancellationToken ct)
         {
             string uri = this.baseUri + "/" + command;
 
@@ -164,10 +179,21 @@ namespace TelegramBotControl
                 request.Content = new FormUrlEncodedContent(parameters);
             }
 
-            string response;
+            string response = null;
             using (this.client = new HttpClient())
             {
-                response = client.SendAsync(request).Result.Content.ReadAsStringAsync().Result;
+                var task = client.SendAsync(request, ct);
+                try
+                {
+                    response = task.Result.Content.ReadAsStringAsync().Result;
+                } catch(AggregateException ex)
+                {
+                    if (task.IsCanceled)
+                    {
+                        return null;
+                    }
+                    throw ex;
+                }
             }
             return response;
         }
