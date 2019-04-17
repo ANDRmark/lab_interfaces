@@ -146,19 +146,25 @@ namespace TelegramBotControl
             string httpMethod = "POST";
             var args = new Dictionary<string, string>();
             args["offset"] = this.nextUpdateId.ToString();
+            args["timeout"] = "15";
 
             Updates result = new Updates();
 
             string response = null;
+            var responsetask = this.Post(httpMethod, command, args, ct);
             try
             {
-                response = await this.Post(httpMethod, command, args, ct);
+                response = await responsetask;
                 ReadUpdates(result.IncomeMessages, response);
             }
-            catch (AggregateException ex)
+            catch (OperationCanceledException e)
             {
-                if (ex.InnerException is OperationCanceledException) throw ex.InnerException;
-                result.Exception = new Exception($"GetUpdates failed. Data returned from telegram: {response}", ex.InnerException);
+                if (responsetask.IsCanceled) ct.ThrowIfCancellationRequested();
+                result.Exception = new Exception($"GetUpdates failed. Data returned from telegram: {response}", e.InnerException);
+            }
+            catch(Exception e)
+            {
+                result.Exception = new Exception($"GetUpdates failed. Data returned from telegram: {response}", e);
             }
             return result;
         }
