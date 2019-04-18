@@ -6,6 +6,7 @@ namespace TelegramBotControl
 {
     public enum OutcomeMessageType
     {
+        None,
         PrivateMessage,
         GroupMessage,
         ChannelPost

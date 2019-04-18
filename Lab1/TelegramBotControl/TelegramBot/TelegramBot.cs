@@ -69,6 +69,22 @@ namespace TelegramBotControl
             return result;
         }
 
+        public bool DestinationExists(OutcomeMessageType messageType, string destination)
+        {
+            try
+            {
+                this.CreateSendMessageArgs(messageType, destination, "");
+            }
+            catch (Exception e)
+            {
+                if(e.Message.Contains("Can not find chat with"))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         public SentMessageStatus SendMessageToUser(string UserName, string message)
         {
             return SendMessage(OutcomeMessageType.PrivateMessage, UserName, message);
@@ -118,15 +134,15 @@ namespace TelegramBotControl
             switch (destination)
             {
                 case OutcomeMessageType.PrivateMessage:
-                    if (!this.chatIDs.privateChatIdsByUsername.ContainsKey(UserOrGroupOrChannel)) throw new Exception($"Can not fing chat with user/group/channel {UserOrGroupOrChannel}. Firstly user/group/channel should write something to bot");
+                    if (!this.chatIDs.privateChatIdsByUsername.ContainsKey(UserOrGroupOrChannel)) throw new Exception($"Can not find chat with user/group/channel {UserOrGroupOrChannel}. Firstly user/group/channel should write something to bot");
                     args["chat_id"] = this.chatIDs.privateChatIdsByUsername[UserOrGroupOrChannel];
                     break;
                 case OutcomeMessageType.GroupMessage:
-                    if (!this.chatIDs.groupChatIdsByGroupName.ContainsKey(UserOrGroupOrChannel)) throw new Exception($"Can not fing chat with user/group/channel {UserOrGroupOrChannel}. Firstly user/group/channel should write something to bot");
+                    if (!this.chatIDs.groupChatIdsByGroupName.ContainsKey(UserOrGroupOrChannel)) throw new Exception($"Can not find chat with user/group/channel {UserOrGroupOrChannel}. Firstly user/group/channel should write something to bot");
                     args["chat_id"] = this.chatIDs.groupChatIdsByGroupName[UserOrGroupOrChannel];
                     break;
                 case OutcomeMessageType.ChannelPost:
-                    if (!this.chatIDs.channelChatIdsByChannelName.ContainsKey(UserOrGroupOrChannel)) throw new Exception($"Can not fing chat with user/group/channel {UserOrGroupOrChannel}. Firstly user/group/channel should write something to bot");
+                    if (!this.chatIDs.channelChatIdsByChannelName.ContainsKey(UserOrGroupOrChannel)) throw new Exception($"Can not find chat with user/group/channel {UserOrGroupOrChannel}. Firstly user/group/channel should write something to bot");
                     args["chat_id"] = this.chatIDs.channelChatIdsByChannelName[UserOrGroupOrChannel];
                     break;
 
