@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace WeatherInformer.WeatherClient.CurrentWeather
+namespace WeatherInformer.WeatherClient.Models.CurrentWeather
 {
     public class Coord
     {

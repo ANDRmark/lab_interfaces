@@ -5,9 +5,28 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WeatherInformer"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        <WebBrowser Margin="10,10,582,228"/>
+        Title="Weather" Height="432" Width="594">
+    <Grid Margin="10" Name="MainGrid">
+        <Button Content="&gt;" HorizontalAlignment="Left" Margin="512,0,0,0" VerticalAlignment="Top" Width="44" Height="44" Click="Button_Forward_click" RenderTransformOrigin="0.5,0.5" FontSize="24"/>
+        <Label Content="Now. Monday, April 29" HorizontalAlignment="Left" Margin="162,0,0,0" VerticalAlignment="Top" Width="242" FontSize="16"/>
+        <Button Content="&lt;" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" Width="44" Height="44" Click="Button_Backward_click" FontSize="24"/>
+        <Label Content="Last updated: 3 hours ago" HorizontalAlignment="Left" Margin="162,31,0,0" VerticalAlignment="Top" Width="199" FontSize="10"/>
+        <Grid Name="grid2" RenderTransformOrigin="0.5,0.5">
+            <Grid.RenderTransform>
+                <MatrixTransform>
+                    <MatrixTransform.Matrix>
+                        <Matrix M11="1" M12="0"
+                        M21="0" M22="1"
+                        OffsetX="600" OffsetY="6"/>
+                    </MatrixTransform.Matrix>
+                </MatrixTransform>
+            </Grid.RenderTransform>
 
+            <Label x:Name="label" Content="Label" HorizontalAlignment="Left" Margin="48,53,0,0" VerticalAlignment="Top" Height="60" Width="89"/>
+        </Grid>
+        <Grid x:Name="grid1" Margin="0,59,0,0">
+        </Grid>
+        <Grid x:Name="ContainerGrid" Margin="0,59,0,0">
+        </Grid>
     </Grid>
 </Window>

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WeatherInformer.WeatherClient.Forecast5days3hours
+namespace WeatherInformer.WeatherClient.Models.Forecast5days3hours
 {
     public class Main
     {
