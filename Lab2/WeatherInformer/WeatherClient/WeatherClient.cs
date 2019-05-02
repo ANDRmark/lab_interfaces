@@ -15,7 +15,7 @@ namespace WeatherInformer.WeatherClient
         private static readonly string DEFAUL_TUNITS = "metric";
         private static readonly string APPID = @"ee7630a47a3c6a249628c0d2d09bb700";
         private static readonly string baseurl = @"http://api.openweathermap.org/data/2.5";
-        public async Task<Models.CurrentWeather.CurrentWeather> GetCurrentWeather(string location)
+        public async Task<Models.CurrentWeather.CurrentWeather> GetCurrentWeatherAsync(string location)
         {
             var url = baseurl +"/weather";
             var parameters = PrepareCurrentWeatherParamneters(location);
@@ -23,7 +23,7 @@ namespace WeatherInformer.WeatherClient
             return JsonSerializer.CreateDefault().Deserialize<Models.CurrentWeather.CurrentWeather>(new JsonTextReader(new StringReader(result)));
         }
 
-        public async Task<Models.Forecast5days3hours.ForecastBy3h> GetForecast(string location, int numberOfDays)
+        public async Task<Models.Forecast5days3hours.ForecastBy3h> GetForecastAsync(string location, int numberOfDays)
         {
             var url = baseurl + "/forecast";
             var parameters = PrepareForecastParamneters(location, numberOfDays);
@@ -54,7 +54,7 @@ namespace WeatherInformer.WeatherClient
         {
             using (HttpClient client = new HttpClient())
             {
-                client.BaseAddress = new Uri(ConstructURLWithParams(url, queryParameters));
+                url = ConstructURLWithParams(url, queryParameters);
                 return await (await client.GetAsync(url)).Content.ReadAsStringAsync();
             }
         }

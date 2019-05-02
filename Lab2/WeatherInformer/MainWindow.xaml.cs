@@ -23,10 +23,14 @@ namespace WeatherInformer
     /// </summary>
     public partial class MainWindow : Window
     {
-        public Grid CurrentRectangle { get; set; }
-        public Grid HiddenRectangle { get; set; }
-        public CurrentWeather CurrentWeather { get; set; }
-        public ForecastBy3h ForecastBy3h { get; set; }
+        Grid CurrentRectangle { get; set; }
+        Grid HiddenRectangle { get; set; }
+        CurrentWeather CurrentWeather { get; set; }
+        ForecastBy3h ForecastBy3h { get; set; }
+        WeatherClient.WeatherClient weatherClient { get; set; }
+
+        DateTime lastUpdate = DateTime.MinValue;
+
 
         public MainWindow()
         {
@@ -83,6 +87,8 @@ namespace WeatherInformer
 
             //var tt = new TranslateTransform();
             //rect2.RenderTransform = tt;
+
+            weatherClient = new WeatherClient.WeatherClient();
         }
 
         private void Button_Forward_click(object sender, RoutedEventArgs e)
@@ -152,11 +158,57 @@ namespace WeatherInformer
         private void CreateCurrentWeatherPanel()
         {
             Grid currentWeatherGrid = new Grid();
-            currentWeatherGrid.Children.Add(CreateLabale("Country: " + CurrentWeather?.sys?.country));
+            DockPanel dp = new DockPanel();
+            StackPanel sp = new StackPanel();
+
+            var labelsTexts = new List<string>
+            {
+                "Country: " + CurrentWeather?.sys?.country,
+                "City: " + CurrentWeather?.name,
+                "Weather: " + CurrentWeather?.weather?[0]?.main + "; " + CurrentWeather?.weather?[0]?.description,
+                "Temperature: " + CurrentWeather?.main?.temp + "°C",
+                "Pressure: " + CurrentWeather?.main?.pressure + "mm",
+                "Humidity: " + CurrentWeather?.main?.humidity + "%"
+            };
+
+            if (CurrentWeather?.wind?.speed != null)
+            {
+                labelsTexts.Add("Wind speed: " + CurrentWeather?.wind?.speed + "km/h");
+            }
+
+            if (CurrentWeather?.wind?.deg != null)
+            {
+                labelsTexts.Add("Wind direction: " + CurrentWeather?.wind?.deg + "°");
+            }
+
+            if (CurrentWeather?.clouds?.all != null)
+            {
+                labelsTexts.Add("Clouds: " + CurrentWeather?.clouds?.all + "%");
+            }
+
+            foreach (var labelText in labelsTexts)
+            {
+                Label label = CreateLabel(labelText, new Thickness(10, 0, 10, 0));
+                sp.Children.Add(label);
+            }
+            dp.Children.Add(sp);
+
+            if(CurrentWeather?.weather?[0]?.icon != null)
+            {
+                Image img = new Image();
+                img.Source = new BitmapImage(new Uri(@"http://openweathermap.org/img/w/"+ CurrentWeather?.weather?[0]?.icon + ".png"));
+                img.MaxWidth = 50;
+                img.MinWidth = 50;
+                img.VerticalAlignment = VerticalAlignment.Top;
+                img.HorizontalAlignment = HorizontalAlignment.Left;
+                dp.Children.Add(img);
+            }
+
+            currentWeatherGrid.Children.Add(dp);
             ContainerGrid.Children.Add(currentWeatherGrid);
         }
 
-        private Label CreateLabale(string text, Thickness margin)
+        private Label CreateLabel(string text, Thickness margin)
         {
             Label Label = new Label();
             Label.Content = text;
@@ -170,6 +222,34 @@ namespace WeatherInformer
         {
 
         }
-    
+
+        private async void Button_Click(object sender, RoutedEventArgs e)
+        {
+            await Refresh();
+        }
+
+        private async Task Refresh()
+        {
+            if ((DateTime.Now - lastUpdate) > new TimeSpan(0, 0, 5))
+            {
+                await GetNewData();
+                ReDrawPanels();
+                LastUpdatedLabel.Content = "Last updated: " + DateTime.Now;
+                lastUpdate = DateTime.Now;
+            }
+        }
+
+
+        private async Task GetNewData()
+        {
+            var location = "Kyiv,ua";
+            this.CurrentWeather = await weatherClient.GetCurrentWeatherAsync(location);
+        }
+
+        private void ReDrawPanels()
+        {
+            ContainerGrid.Children.Clear();
+            CreateCurrentWeatherPanel();
+        }
     }
 }
