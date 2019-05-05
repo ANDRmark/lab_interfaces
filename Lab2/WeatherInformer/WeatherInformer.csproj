@@ -64,6 +64,7 @@
     </Compile>
     <Compile Include="WeatherClient\Models\CurrentWeather.cs" />
     <Compile Include="WeatherClient\Models\Forecast5days3hours.cs" />
+    <Compile Include="WeatherClient\Models\Location.cs" />
     <Compile Include="WeatherClient\WeatherClient.cs" />
     <ApplicationDefinition Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -96,6 +97,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="city.list.bin" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -107,6 +109,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="kisspng-computer-icons-refresh-free-download-clip-art-one-button-reload-5b282ade8d1bf6.251990151529359070578.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="city.list.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

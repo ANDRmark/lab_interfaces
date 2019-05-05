@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using WeatherInformer.WeatherClient.Models.CurrentWeather;
 using WeatherInformer.WeatherClient.Models.Forecast5days3hours;
+using WeatherInformer.WeatherClient.Models.Location;
 
 namespace WeatherInformer
 {
@@ -37,6 +39,36 @@ namespace WeatherInformer
         public MainWindow()
         {
             InitializeComponent();
+
+            var stream = new FileStream(@"../../city.list.txt", FileMode.Open, FileAccess.Read);
+            var streamReader = new StreamReader(stream, Encoding.UTF8);
+            List<Location> locations = new List<Location>(201000);
+            Location loc;
+            string line;
+            while ((line = streamReader.ReadLine()) != null)
+            {
+                loc = new Location();
+                loc.coord = new WeatherClient.Models.Location.Coord();
+
+                loc.id = int.Parse(line);
+
+                line = streamReader.ReadLine();
+                loc.name = line;
+
+                line = streamReader.ReadLine();
+                loc.country = line;
+
+                line = streamReader.ReadLine();
+                loc.coord.lon = double.Parse(line);
+
+                line = streamReader.ReadLine();
+                loc.coord.lat = double.Parse(line);
+
+                locations.Add(loc);
+            }
+
+            streamReader.Close();
+            stream.Close();
         }
 
         private void Button_Forward_click(object sender, RoutedEventArgs e)
