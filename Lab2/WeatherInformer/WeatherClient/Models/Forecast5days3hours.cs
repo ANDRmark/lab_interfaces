@@ -15,7 +15,7 @@ namespace WeatherInformer.WeatherClient.Models.Forecast5days3hours
         public double pressure { get; set; }
         public double sea_level { get; set; }
         public double grnd_level { get; set; }
-        public int humidity { get; set; }
+        public double humidity { get; set; }
         public double temp_kf { get; set; }
     }
 
@@ -29,7 +29,7 @@ namespace WeatherInformer.WeatherClient.Models.Forecast5days3hours
 
     public class Clouds
     {
-        public int all { get; set; }
+        public double all { get; set; }
     }
 
     public class Wind
@@ -55,7 +55,7 @@ namespace WeatherInformer.WeatherClient.Models.Forecast5days3hours
 
     public class List
     {
-        public long dt { get; set; }
+        public double dt { get; set; }
         public Main main { get; set; }
         public List<Weather> weather { get; set; }
         public Clouds clouds { get; set; }
@@ -78,7 +78,7 @@ namespace WeatherInformer.WeatherClient.Models.Forecast5days3hours
         public string name { get; set; }
         public Coord coord { get; set; }
         public string country { get; set; }
-        public int population { get; set; }
+        public double population { get; set; }
     }
 
     public class ForecastBy3h

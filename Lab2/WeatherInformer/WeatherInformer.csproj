@@ -62,6 +62,9 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="LocationSelector.xaml.cs">
+      <DependentUpon>LocationSelector.xaml</DependentUpon>
+    </Compile>
     <Compile Include="WeatherClient\Models\CurrentWeather.cs" />
     <Compile Include="WeatherClient\Models\Forecast5days3hours.cs" />
     <Compile Include="WeatherClient\Models\Location.cs" />
@@ -70,6 +73,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="LocationSelector.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

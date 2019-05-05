@@ -5,14 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WeatherInformer"
         mc:Ignorable="d"
-        Title="Weather" Height="412.15" Width="458">
+        Title="Weather" Height="412.15" Width="458" Closing="Window_Closing">
     <Grid Margin="10" Name="MainGrid">
         <Button Content="&gt;" HorizontalAlignment="Right" Margin="0,0,10,0" VerticalAlignment="Top" Width="44" Height="36" Click="Button_Forward_click" FontSize="24" ClickMode="Press"/>
         <Button Content="&lt;" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" Width="44" Height="36" Click="Button_Backward_click" FontSize="24" ClickMode="Press"/>
         <Grid x:Name="grid1" Margin="0,59,0,0">
         </Grid>
-        <Grid x:Name="ContainerGrid" Margin="0,40,0,0"/>
-        <DockPanel HorizontalAlignment="Center" Margin="5,5,5,0" VerticalAlignment="Top">
+        <Grid x:Name="ContainerGrid" Margin="0,60,0,0"/>
+        <DockPanel HorizontalAlignment="Center" Margin="5,25,5,0" VerticalAlignment="Top">
             <Label Name="LastUpdatedLabel" Content="Last updated: never"  Margin="0,0,0,0" FontSize="12" />
             <Button Content="" Width="25" Height="25" Click="Button_Click">
                 <Button.Background>
@@ -41,5 +41,6 @@
                 </Button.Style>
             </Button>
         </DockPanel>
+        <Button Content="Select Location" HorizontalAlignment="Center" Margin="5" VerticalAlignment="Top" Click="Button_Click_1"/>
     </Grid>
 </Window>

@@ -35,7 +35,10 @@ namespace WeatherInformer
         DateTime lastUpdate = DateTime.MinValue;
         int currentPanelNumber { get; set; } = 0;
 
-
+        LocationSelector LocationSelectorWondow;
+        bool IsLocationSelectorWondowClosed { get; set; } = true;
+        long locationId { get; set; } = -1;
+        List<Location> locations;
         public MainWindow()
         {
             InitializeComponent();
@@ -66,6 +69,8 @@ namespace WeatherInformer
 
                 locations.Add(loc);
             }
+
+            this.locations = locations;
 
             streamReader.Close();
             stream.Close();
@@ -300,9 +305,9 @@ namespace WeatherInformer
 
         private async Task Refresh()
         {
-            if ((DateTime.Now - lastUpdate) > new TimeSpan(0, 0, 5))
+            if ((DateTime.Now - lastUpdate) > new TimeSpan(0, 0, 5) && this.locationId > 0)
             {
-                await GetNewData();
+                await GetNewData(this.locationId);
                 ReDrawPanels();
                 LastUpdatedLabel.Content = "Last updated: " + DateTime.Now;
                 lastUpdate = DateTime.Now;
@@ -310,11 +315,10 @@ namespace WeatherInformer
         }
 
 
-        private async Task GetNewData()
+        private async Task GetNewData(long locationId)
         {
-            var location = "Kyiv,ua";
-            this.CurrentWeather = await weatherClient.GetCurrentWeatherAsync(location);
-            this.ForecastBy3h = await weatherClient.GetForecastAsync(location,5);
+            this.CurrentWeather = await weatherClient.GetCurrentWeatherAsync(locationId);
+            this.ForecastBy3h = await weatherClient.GetForecastAsync(locationId, 5);
         }
 
         private void ReDrawPanels()
@@ -325,6 +329,27 @@ namespace WeatherInformer
             CreateForecastWeatherPanels();
             currentPanelNumber = 0;
             ContainerGrid.Children.Add(panels[currentPanelNumber]);
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            if (IsLocationSelectorWondowClosed)
+            {
+                IsLocationSelectorWondowClosed = false;
+                LocationSelectorWondow = new LocationSelector( id => this.locationId = id, this.locations);
+                LocationSelectorWondow.Closed += (a, b) => { this.IsLocationSelectorWondowClosed = true; };
+            }
+            else
+            {
+                LocationSelectorWondow.Activate();
+            }
+
+            LocationSelectorWondow.Show();
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            LocationSelectorWondow?.Close();
         }
     }
 }

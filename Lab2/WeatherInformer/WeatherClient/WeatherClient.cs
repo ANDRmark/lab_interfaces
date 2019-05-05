@@ -15,7 +15,7 @@ namespace WeatherInformer.WeatherClient
         private static readonly string DEFAUL_TUNITS = "metric";
         private static readonly string APPID = @"ee7630a47a3c6a249628c0d2d09bb700";
         private static readonly string baseurl = @"http://api.openweathermap.org/data/2.5";
-        public async Task<Models.CurrentWeather.CurrentWeather> GetCurrentWeatherAsync(string location)
+        public async Task<Models.CurrentWeather.CurrentWeather> GetCurrentWeatherAsync(long location)
         {
             var url = baseurl +"/weather";
             var parameters = PrepareCurrentWeatherParamneters(location);
@@ -23,7 +23,7 @@ namespace WeatherInformer.WeatherClient
             return JsonSerializer.CreateDefault().Deserialize<Models.CurrentWeather.CurrentWeather>(new JsonTextReader(new StringReader(result)));
         }
 
-        public async Task<Models.Forecast5days3hours.ForecastBy3h> GetForecastAsync(string location, int numberOfDays)
+        public async Task<Models.Forecast5days3hours.ForecastBy3h> GetForecastAsync(long location, int numberOfDays)
         {
             var url = baseurl + "/forecast";
             var parameters = PrepareForecastParamneters(location, numberOfDays);
@@ -31,21 +31,21 @@ namespace WeatherInformer.WeatherClient
             return JsonSerializer.CreateDefault().Deserialize<Models.Forecast5days3hours.ForecastBy3h>(new JsonTextReader(new StringReader(result)));
         }
 
-        private Dictionary<string, string> PrepareForecastParamneters(string location, int numberOfDays, string unitSystem = null)
+        private Dictionary<string, string> PrepareForecastParamneters(long location, int numberOfDays, string unitSystem = null)
         {
             var parameters = new Dictionary<string, string>();
             parameters["units"] = unitSystem ?? DEFAUL_TUNITS;
-            parameters["q"] = location;
+            parameters["id"] = location.ToString();
             parameters["cnt"] = (numberOfDays * 8).ToString(); // forecast made by 3 hours, one day is 8 forecasts
             parameters["APPID"] = APPID;
             return parameters;
         }
 
-        private Dictionary<string, string> PrepareCurrentWeatherParamneters(string location, string unitSystem = null)
+        private Dictionary<string, string> PrepareCurrentWeatherParamneters(long location, string unitSystem = null)
         {
             var parameters = new Dictionary<string, string>();
             parameters["units"] = unitSystem ?? DEFAUL_TUNITS;
-            parameters["q"] = location;
+            parameters["id"] = location.ToString();
             parameters["APPID"] = APPID;
             return parameters;
         }
